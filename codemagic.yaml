@@ -1,35 +1,34 @@
 workflows:
   ios-workflow:
-    name: Tactile Learner Build
+    name: Keyboard Extension Build
     environment:
       xcode: latest
+      vars:
+        XCODE_PROJECT: "TactileLearnerKeyboard.xcodeproj"
+        XCODE_SCHEME: "KeyboardExtension"
     scripts:
-      - name: Create Xcode Project
+      - name: Setup Project Structure
         script: |
           mkdir -p TactileLearnerKeyboard.xcodeproj
           mkdir -p TactileLearnerKeyboard
           mkdir -p KeyboardExtension
           
-          # Generate project file
-          echo "// !$*UTF8*$!" > TactileLearnerKeyboard.xcodeproj/project.pbxproj
-          
-          # Move files to correct locations
-          mv KeyboardViewController.swift KeyboardExtension/
-          mv Info.plist TactileLearnerKeyboard/
-          mv KeyboardExtension-Info.plist KeyboardExtension/Info.plist
-          
           # Create minimal Xcode project
-          /usr/bin/xcodebuild -create-xcframework
+          echo "// !$*UTF8*$!" > TactileLearnerKeyboard.xcodeproj/project.pbxproj
+          echo '{}' > TactileLearnerKeyboard.xcodeproj/project.xcworkspace/contents.xcworkspacedata
           
-      - name: Build Keyboard
+          # Move source files
+          mv KeyboardViewController.swift KeyboardExtension/
+          mv KeyboardExtension-Info.plist KeyboardExtension/Info.plist
+          mv TactileLearnerKeyboard-Info.plist TactileLearnerKeyboard/Info.plist
+
+      - name: Build Extension
         script: |
           xcodebuild build \
-            -scheme "KeyboardExtension" \
-            -configuration Release \
-            -archivePath build/Keyboard.xcarchive
+            -scheme "$XCODE_SCHEME" \
+            -project "$XCODE_PROJECT" \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED="NO"
     artifacts:
-      - build/Keyboard.xcarchive
-    publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_API_KEY
-      testflight: true
+      - KeyboardExtension/**/*.swift
+      - KeyboardExtension/**/*.plist
