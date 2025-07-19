@@ -4,23 +4,23 @@ workflows:
     environment:
       xcode: latest
     triggering:
+      events:
+        - push
       branch_patterns:
         - pattern: main
           include: true
-          build_on: every_commit
     scripts:
       - name: Build Keyboard Extension
         script: |
-          # Navigate to KeyboardExtension directory
           cd KeyboardExtension
           
-          # Build without signing
+          # Build the extension
           xcodebuild build \
             -scheme "KeyboardExtension" \
             -configuration Debug \
             CODE_SIGNING_ALLOWED="NO"
           
-          # Generate unsigned .ipa for testing
+          # Generate unsigned .ipa
           mkdir -p Payload
           mv Build/Products/Debug-iphoneos/KeyboardExtension.appex Payload/
           zip -r Keyboard.ipa Payload
