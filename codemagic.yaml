@@ -1,0 +1,35 @@
+workflows:
+  ios-workflow:
+    name: Tactile Learner Build
+    environment:
+      xcode: latest
+    scripts:
+      - name: Create Xcode Project
+        script: |
+          mkdir -p TactileLearnerKeyboard.xcodeproj
+          mkdir -p TactileLearnerKeyboard
+          mkdir -p KeyboardExtension
+          
+          # Generate project file
+          echo "// !$*UTF8*$!" > TactileLearnerKeyboard.xcodeproj/project.pbxproj
+          
+          # Move files to correct locations
+          mv KeyboardViewController.swift KeyboardExtension/
+          mv Info.plist TactileLearnerKeyboard/
+          mv KeyboardExtension-Info.plist KeyboardExtension/Info.plist
+          
+          # Create minimal Xcode project
+          /usr/bin/xcodebuild -create-xcframework
+          
+      - name: Build Keyboard
+        script: |
+          xcodebuild build \
+            -scheme "KeyboardExtension" \
+            -configuration Release \
+            -archivePath build/Keyboard.xcarchive
+    artifacts:
+      - build/Keyboard.xcarchive
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_API_KEY
+      testflight: true
